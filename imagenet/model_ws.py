@@ -137,22 +137,6 @@ class NASNet(BasicUnit):
         x = self.classifier(x)
         return x
 
-    def get_flops(self, x):
-        flop, x = self.first_conv.get_flops(x)
-
-        for block in self.blocks:
-            delta_flop, x = block.get_flops(x)
-            flop += delta_flop
-        if self.feature_mix_layer:
-            delta_flop, x = self.feature_mix_layer.get_flops(x)
-            flop += delta_flop
-        x = self.global_avg_pooling(x)
-        x = x.view(x.size(0), -1)  # flatten
-
-        delta_flop, x = self.classifier.get_flops(x)
-        flop += delta_flop
-        return flop, x
-
     def set_bn_param(self, bn_momentum, bn_eps):
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):

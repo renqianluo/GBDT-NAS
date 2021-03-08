@@ -118,9 +118,6 @@ class BasicLayer(BasicUnit):
     def build_from_config(config):
         raise NotImplementedError
 
-    def get_flops(self, x):
-        raise NotImplementedError
-
     @staticmethod
     def is_zero_layer():
         return False
@@ -191,9 +188,6 @@ class ConvLayer(BasicLayer):
     def build_from_config(config):
         return ConvLayer(**config)
 
-    def get_flops(self, x):
-        return count_conv_flop(self.conv, x), self.forward(x)
-
 
 class DepthConvLayer(BasicLayer):
 
@@ -256,11 +250,6 @@ class DepthConvLayer(BasicLayer):
     def build_from_config(config):
         return DepthConvLayer(**config)
 
-    def get_flops(self, x):
-        depth_flop = count_conv_flop(self.depth_conv, x)
-        point_flop = count_conv_flop(self.point_conv, self.depth_conv(x))
-        return depth_flop + point_flop, self.forward(x)
-
 
 class PoolingLayer(BasicLayer):
 
@@ -312,9 +301,6 @@ class PoolingLayer(BasicLayer):
     def build_from_config(config):
         return PoolingLayer(**config)
 
-    def get_flops(self, x):
-        return 0, self.forward(x)
-
 
 class IdentityLayer(BasicLayer):
 
@@ -340,9 +326,6 @@ class IdentityLayer(BasicLayer):
     @staticmethod
     def build_from_config(config):
         return IdentityLayer(**config)
-
-    def get_flops(self, x):
-        return 0, self.forward(x)
 
 
 class LinearLayer(BasicUnit):
@@ -445,9 +428,6 @@ class LinearLayer(BasicUnit):
     def build_from_config(config):
         return LinearLayer(**config)
 
-    def get_flops(self, x):
-        return self.linear.weight.numel(), self.forward(x)
-
     @staticmethod
     def is_zero_layer():
         return False
@@ -519,20 +499,6 @@ class MBInvertedConvLayer(BasicUnit):
     def build_from_config(config):
         return MBInvertedConvLayer(**config)
 
-    def get_flops(self, x):
-        if self.inverted_bottleneck:
-            flop1 = count_conv_flop(self.inverted_bottleneck.conv, x)
-            x = self.inverted_bottleneck(x)
-        else:
-            flop1 = 0
-
-        flop2 = count_conv_flop(self.depth_conv.conv, x)
-        x = self.depth_conv(x)
-
-        flop3 = count_conv_flop(self.point_linear.conv, x)
-        x = self.point_linear(x)
-        return flop1 + flop2 + flop3, x
-
     @staticmethod
     def is_zero_layer():
         return False
@@ -570,9 +536,6 @@ class ZeroLayer(BasicUnit):
     @staticmethod
     def build_from_config(config):
         return ZeroLayer(**config)
-
-    def get_flops(self, x):
-        return 0, self.forward(x)
 
     @staticmethod
     def is_zero_layer():

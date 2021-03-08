@@ -333,9 +333,9 @@ def prune_bi_search_space(bst, seqs, accs, pruned_operations):
             if pos_pos_shap_value < 0: # no confliction
                 pruned_operations[feature_id_2] = True
         elif feature_id_2 in pruned_operations:
-            if pos_pos_shap_value < 0 and feature_constraints[feature_id_2] != True:
+            if pos_pos_shap_value < 0 and pruned_operations[feature_id_2] != True:
                 pruned_operations[feature_id_1] = True
-        logging.info('feature:{} pos_pos_shap_value:{} pos_neg_shap_value:{} neg_pos_shap_value:{} neg_neg_shap_value:{}\n'.format(feature_names[feature_id_1], feature_names[feature_id_2],  pos_pos_shap_value, pos_neg_shap_value, neg_pos_shap_value, neg_neg_shap_value))  
+        logging.info('feature:{} {} pos_pos_shap_value:{} pos_neg_shap_value:{} neg_pos_shap_value:{} neg_neg_shap_value:{}\n'.format(feature_names[feature_id_1], feature_names[feature_id_2],  pos_pos_shap_value, pos_neg_shap_value, neg_pos_shap_value, neg_neg_shap_value))  
         prune_count = len(pruned_operations) - old_prune_count
         if prune_count >= args.prune_num:
             break

@@ -152,9 +152,6 @@ class BasicUnit(nn.Module):
     def build_from_config(config):
         raise NotImplementedError
 
-    def get_flops(self, x):
-        raise NotImplementedError
-
     def get_parameters(self, keys=None, mode='include'):
         if keys is None:
             for name, param in self.named_parameters():

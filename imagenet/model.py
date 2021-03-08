@@ -7,7 +7,8 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from layers import *
+from layers import set_layer_from_config
+from utils import BasicUnit
     
 
 class MobileInvertedResidualBlock(BasicUnit):
@@ -47,15 +48,6 @@ class MobileInvertedResidualBlock(BasicUnit):
         mobile_inverted_conv = set_layer_from_config(config['mobile_inverted_conv'])
         shortcut = set_layer_from_config(config['shortcut'])
         return MobileInvertedResidualBlock(mobile_inverted_conv, shortcut)
-
-    def get_flops(self, x):
-        flops1, _ = self.mobile_inverted_conv.get_flops(x)
-        if self.shortcut:
-            flops2, _ = self.shortcut.get_flops(x)
-        else:
-            flops2 = 0
-
-        return flops1 + flops2, self.forward(x)
 
 
 class NASNet(BasicUnit):
@@ -110,22 +102,6 @@ class NASNet(BasicUnit):
             blocks.append(MobileInvertedResidualBlock.build_from_config(block_config))
 
         return NASNet(first_conv, blocks, feature_mix_layer, classifier)
-
-    def get_flops(self, x):
-        flop, x = self.first_conv.get_flops(x)
-
-        for block in self.blocks:
-            delta_flop, x = block.get_flops(x)
-            flop += delta_flop
-        if self.feature_mix_layer:
-            delta_flop, x = self.feature_mix_layer.get_flops(x)
-            flop += delta_flop
-        x = self.global_avg_pooling(x)
-        x = x.view(x.size(0), -1)  # flatten
-
-        delta_flop, x = self.classifier.get_flops(x)
-        flop += delta_flop
-        return flop, x
 
     def set_bn_param(self, bn_momentum, bn_eps):
         for m in self.modules():
