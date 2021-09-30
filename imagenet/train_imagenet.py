@@ -17,6 +17,8 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torch.backends.cudnn as cudnn
 from model import NASNet
+from measure import profile
+
 
 parser = argparse.ArgumentParser()
 
@@ -120,8 +122,9 @@ def build_imagenet(model_config, model_state_dict, optimizer_state_dict, **kwarg
     model.init_model(args.model_init)
     model.set_bn_param(model_config['bn']['momentum'], model_config['bn']['eps'])
     print(model.config)
-    logging.info("param size = %d", utils.count_parameters(model))
-    logging.info("multi adds = %fM", model.get_flops(torch.ones(1, 3, 224, 224).float())[0] / 1000000)
+    flops, params = profile(model, (1, 3, 224, 224))
+    logging.info("param size = {}M".format(params/1e6))
+    logging.info("multi adds = {}M".format(flops/1e6))
     if model_state_dict is not None:
         model.load_state_dict(model_state_dict)
 
