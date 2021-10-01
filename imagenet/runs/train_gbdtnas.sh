@@ -9,7 +9,7 @@ ARCH="6 6 5 5 2 5 1 4 2 7 4 2 4 5 1 7 6 4 2 4 6"
 mkdir -p $OUTPUT_DIR
 
 python train_imagenet.py \
-  --data_path=$DATA_DIR \
+  --data=$DATA_DIR \
   --output_dir=$OUTPUT_DIR \
   --lazy_load \
   --arch="$ARCH" \
